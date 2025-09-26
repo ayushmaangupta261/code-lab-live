@@ -609,6 +609,8 @@ const createFolder = async (req, res) => {
 
     const folderPath = path.join(PROJECTS_DIR, selectedFolder);
 
+   
+
     await fs.mkdir(folderPath, { recursive: true });
 
     const io = getIOInstance();
