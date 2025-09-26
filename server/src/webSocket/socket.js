@@ -85,7 +85,7 @@ export function initializeSocket(io) {
         const shell = "/bin/sh"; // ✅ always available in Linux/Render
 
         // Ensure project dir exists
-        const projectDir = `${BASE_PROJECTS_DIR}/${roomId}`;
+        const projectDir = `app/projects/${roomId}`;
         await fs.mkdir(projectDir, { recursive: true });
 
         const ptyProcess = spawn(shell, [], {

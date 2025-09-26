@@ -26,7 +26,7 @@ const TerminalComponent = () => {
     xterm.open(terminalRef.current);
     xtermRef.current = xterm;
 
-    const socket = io("http://localhost:4000", {
+    const socket = io("https://codelab-backend-3pxz.onrender.com/", {
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 10,
