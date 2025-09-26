@@ -377,6 +377,8 @@ const EditorPage = () => {
           fullName: user?.fullName,
         });
 
+        socketRef.current.emit("start-terminal", { roomId }); // ✅ send roomId too
+
         if (socketRef.current) {
           socketRef.current.on(
             ACTIONS.JOINED,
