@@ -2,15 +2,15 @@ import { io } from "socket.io-client";
 
 export const initSocket = async () => {
   const BASE_URL =
-    import.meta.env.VITE_APP_SOCKET_URL || "http://localhost:4000";
+    import.meta.env.VITE_APP_SOCKET_URL || "https://codelab-backend-3pxz.onrender.com/";
 
   const options = {
-    forceNew: true, 
+    forceNew: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
     transports: ["websocket"],
   };
- 
+
   try {
     const socket = io(BASE_URL, options);
 
