@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getMyQuestions } from "../../../services/operations/instructorApi";
+import { getMyQuestions } from "../../../services/operations/instructorApi.js";
 
 const Questions = () => {
   const [questions, setQuestions] = useState([]);

@@ -4,9 +4,9 @@ import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import google from "../../assets/Auth/google.png";
 import github from "../../assets/Auth/github.png";
-import { login } from "../../services/operations/authApi";
+import { login } from "../../services/operations/authApi.js";
 import { loginInstructor } from "../../services/operations/instructorApi.js";
-import { loginInstitute } from "../../services/operations/instituteAPI";
+import { loginInstitute } from "../../services/operations/instituteApi.js";
 import { useNavigate } from "react-router";
 
 const LogIn = ({ toggleLogInForm }) => {

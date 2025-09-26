@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getMyQuestions } from "../../../../../services/operations/instructorApi";
+import { getMyQuestions } from "../../../../../services/operations/instructorApi.js";
 import "../../Instructor-Students/scrollbar.css"
 
 const MyQuestions = ({ toggleMyQuestions }) => {

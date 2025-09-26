@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import "./scrollbar.css";
-import { getStudentRooms } from "../../../../services/operations/instructorApi";
+import { getStudentRooms } from "../../../../services/operations/instructorApi.js";
 
 const StudentProjects = () => {
   const location = useLocation();

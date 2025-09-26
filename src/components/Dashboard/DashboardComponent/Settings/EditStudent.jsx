@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   editStudentDetails,
   getAllCollegeListForStudent,
-} from "../../../../services/operations/studentApi";
+} from "../../../../services/operations/studentApi.js";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getSolutionsByStudentId } from "../../../../services/operations/instructorApi";
+import { getSolutionsByStudentId } from "../../../../services/operations/instructorApi.js";
 import CodeMirror from "@uiw/react-codemirror";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";

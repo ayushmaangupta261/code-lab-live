@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { logout } from "../../services/operations/authApi";
-import { logoutInstructor } from "../../services/operations/instructorApi";
-import { logoutInstitute } from "../../services/operations/instituteAPI";
+import { logoutInstructor } from "../../services/operations/instructorApi.js";
+import { logoutInstitute } from "../../services/operations/instituteApi.js";
 
 const Navbar = () => {
   const dispatch = useDispatch();

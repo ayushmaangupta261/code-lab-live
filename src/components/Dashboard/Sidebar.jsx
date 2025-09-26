@@ -4,8 +4,8 @@ import { useDispatch } from "react-redux";
 import { useState } from "react";
 import { VscSignOut } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
-import { DashboardLinks } from "../../constants/Links/DashboardLinks";
-import SidebarLink from "./SidebarLink";
+import { DashboardLinks } from "../../constants/Links/DashboardLinks.js";
+import SidebarLink from "./SidebarLink.jsx";
 
 const Sidebar = ({ accountType }) => {
   const navigate = useNavigate();
