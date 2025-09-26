@@ -222,7 +222,8 @@ const createAndJoinRoom = async (req, res) => {
       return res.status(200).json({ message: "Student added to existing room", roomData: populatedRoom, success: true });
     } else {
       // 🔥 Create folder in root/projects/<roomId>
-      const projectFolderPath = `projects/${roomId}`;
+      // const projectFolderPath = `projects/${roomId}`;
+      const projectFolderPath = path.resolve("/app/projects", roomId);
 
       console.log("Path -> ", projectFolderPath);
 

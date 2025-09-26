@@ -313,7 +313,7 @@ export function initializeSocket(io) {
         name: "xterm-color",
         cols: 80,
         rows: 24,
-        cwd: `/app/projects/${roomId}`, // Docker path
+        cwd: `projects/${roomId}`, // Docker path
         env: process.env,
       });
 
