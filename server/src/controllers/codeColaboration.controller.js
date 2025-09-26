@@ -452,15 +452,12 @@
 
 
 
-
 import fs from "fs/promises";
 import path from "path";
 import { getIOInstance } from "../webSocket/SocketStore.js";
 
-// Base projects directory (absolute, works inside Docker at /app/projects)
-// const PROJECTS_DIR = path.join(process.cwd(), "app", "projects");
-const PROJECTS_DIR = "projects";
-
+// Absolute base projects directory (inside Docker)
+const PROJECTS_DIR = "/app/projects";
 
 // file system
 const generateFileTree = async (req, res) => {
@@ -631,3 +628,4 @@ const createFolder = async (req, res) => {
 };
 
 export { generateFileTree, getFiles, deleteFile, createFile, createFolder };
+

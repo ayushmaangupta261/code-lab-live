@@ -234,14 +234,15 @@
 
 import { spawn } from "@lydell/node-pty";
 import ACTIONS from "../constants/Actions.js"; // Import action constants
-import chaukidar from "chokidar";
-import fs from "fs/promises"; // ✅ Import the correct module
+import chokidar from "chokidar"; // ✅ fixed typo
+import fs from "fs/promises";
+
+const BASE_PROJECTS_DIR = "/app/projects"; // ✅ absolute path in Docker
 
 const userSocketMap = {}; // Store socket-user mappings
 const emailToSocketMapping = new Map();
 const socketToEmailMapping = new Map();
 const rooms = {}; // { roomId: { history: [], users: Set<socket.id> } }
-
 
 export function initializeSocket(io) {
   function getAllConnectedClients(roomId) {
@@ -262,7 +263,12 @@ export function initializeSocket(io) {
       socket.join(roomId);
 
       const clients = getAllConnectedClients(roomId);
-      io.to(roomId).emit(ACTIONS.JOINED, { clients, email, socketId: socket.id, fullName });
+      io.to(roomId).emit(ACTIONS.JOINED, {
+        clients,
+        email,
+        socketId: socket.id,
+        fullName,
+      });
     });
 
     // Code changes
@@ -274,11 +280,13 @@ export function initializeSocket(io) {
       if (socketId) io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
     });
 
-    // Save file (Linux path inside Docker)
+    // Save file
     socket.on(ACTIONS.FILE_CHANGE, async ({ path, content }) => {
       try {
-        const filePath = `projects/${path}`;
-        await fs.mkdir(filePath.substring(0, filePath.lastIndexOf("/")), { recursive: true }); // ensure folder exists
+        const filePath = `${BASE_PROJECTS_DIR}/${path}`;
+        await fs.mkdir(filePath.substring(0, filePath.lastIndexOf("/")), {
+          recursive: true,
+        }); // ensure folder exists
         await fs.writeFile(filePath, content);
         console.log(`File saved: ${filePath}`);
       } catch (error) {
@@ -289,7 +297,7 @@ export function initializeSocket(io) {
     // Delete file/folder
     socket.on(ACTIONS.DELETE_FILE, async ({ path }) => {
       try {
-        const fullPath = `projects/${path}`;
+        const fullPath = `${BASE_PROJECTS_DIR}/${path}`;
         const stats = await fs.stat(fullPath);
         if (stats.isDirectory()) {
           await fs.rm(fullPath, { recursive: true, force: true });
@@ -303,8 +311,7 @@ export function initializeSocket(io) {
       }
     });
 
-    
-    // Terminal Integration (Linux-friendly for Docker)
+    // Terminal Integration
     try {
       const roomId = socket.handshake.query.roomId;
       const shell = "bash"; // Docker runs Linux
@@ -313,7 +320,7 @@ export function initializeSocket(io) {
         name: "xterm-color",
         cols: 80,
         rows: 24,
-        cwd: `/app/projects/${roomId}`, // Docker path
+        cwd: `${BASE_PROJECTS_DIR}/${roomId}`, // ✅ path fixed
         env: process.env,
       });
 
@@ -327,14 +334,12 @@ export function initializeSocket(io) {
     }
 
     // Watch projects folder
-    chaukidar.watch("/projects").on("all", (event, path) => {
+    chokidar.watch(BASE_PROJECTS_DIR).on("all", (event, path) => {
       io.emit("file:refresh", path);
     });
 
+    // ------------------- Whiteboard + Call stuff (unchanged) -------------------
 
-    //----------------------------------------------------------------------------------------------------
-
-    // Handle user joining a call
     socket.on("join-call", ({ roomId, emailId }) => {
       if (!roomId || !emailId) return;
 
@@ -345,30 +350,24 @@ export function initializeSocket(io) {
 
       socket.join(roomId);
 
-      // Notify other users in the room
       socket.broadcast.to(roomId).emit("joined-call", { emailId });
     });
 
     socket.on("join-board", ({ roomId, userId }) => {
-      // Initialize room if it doesn't exist
       if (!rooms[roomId]) {
         rooms[roomId] = {
           history: [],
-          users: new Map(), // use Map to associate socketId with userId
+          users: new Map(),
           cursors: {},
         };
       }
 
-      // Save user to room
       rooms[roomId].users.set(socket.id, userId);
       socket.join(roomId);
 
       console.log(`User ${userId} joined room: ${roomId}`);
 
-      // Send drawing history only to the new user
       socket.emit("history", { history: rooms[roomId].history });
-
-      // Optional: Notify others that a new user joined (for cursors, presence, etc.)
       socket.to(roomId).emit("user-joined", { userId });
     });
 
@@ -376,12 +375,8 @@ export function initializeSocket(io) {
       const { roomId, x0, y0, x1, y1, color } = data;
       if (!rooms[roomId]) return;
 
-      // Save to drawing history
       rooms[roomId].history.push({ x0, y0, x1, y1, color });
-
-      console.log("Drwa -> ", data);
-
-      // Broadcast to others
+      console.log("Draw -> ", data);
       socket.to(roomId).emit("draw", data);
     });
 
@@ -395,7 +390,6 @@ export function initializeSocket(io) {
 
     socket.on("clear-canvas", ({ roomId }) => {
       if (!rooms[roomId]) return;
-
       rooms[roomId].history = [];
       socket.to(roomId).emit("clear-canvas");
     });
@@ -407,71 +401,36 @@ export function initializeSocket(io) {
     socket.on("cursor", (data) => {
       const { roomId, userId } = data;
       if (!rooms[roomId]) return;
-
-      // Update user’s cursor in memory to prevent duplicates
       rooms[roomId].cursors[userId] = data;
-
-      // Emit cursor data to others
       socket.to(roomId).emit("cursor", data);
     });
 
     socket.on("disconnect", () => {
       const emailId = socketToEmailMapping.get(socket.id);
-
       if (emailId) {
         emailToSocketMapping.delete(emailId);
       }
-
       socketToEmailMapping.delete(socket.id);
       console.log("A user disconnected:", socket.id);
 
-      // Iterate through rooms this socket was part of
       const roomsLeft = Array.from(socket.rooms).filter((r) => r !== socket.id);
-
       roomsLeft.forEach((roomId) => {
         const room = rooms[roomId];
         if (room) {
           const userId = room.users.get(socket.id);
-
-          // 🔴 Remove cursor if it exists
           if (userId && room.cursors[userId]) {
             delete room.cursors[userId];
-
-            // Notify others to remove the cursor
             socket.to(roomId).emit("cursor-remove", { userId });
           }
-
-          // Remove user from room map
           room.users.delete(socket.id);
-
-          // 🧹 Clean up room if empty
           if (room.users.size === 0) {
             delete rooms[roomId];
           }
         }
       });
     });
-
-    // socket.on("disconnect", () => {
-    //   const emailId = socketToEmailMapping.get(socket.id);
-
-    //   if (emailId) {
-    //     emailToSocketMapping.delete(emailId);
-    //   }
-
-    //   socketToEmailMapping.delete(socket.id);
-    //   console.log("A user disconnected:", socket.id);
-
-    //   // Handle room cleanup
-    //   const roomsLeft = Array.from(socket.rooms).filter((r) => r !== socket.id);
-    //   roomsLeft.forEach((roomId) => {
-    //     const room = rooms[roomId];
-    //     if (room && io.sockets.adapter.rooms.get(roomId)?.size === 1) {
-    //       delete rooms[roomId]; // Clean up if it's the last user in the room
-    //     }
-    //   });
-    // });
   });
 }
+
 
 //----------------------------------------------------------------------================================================================================
