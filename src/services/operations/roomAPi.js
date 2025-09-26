@@ -1,7 +1,7 @@
-import { apiConnector } from "../apiConnector";
-import { roomEndpoints } from "../endPoints/roomEndpoints";
+import { apiConnector } from "../apiConnector.js";
+import { roomEndpoints } from "../endPoints/roomEndpoints.js";
 import toast from "react-hot-toast";
-import { setRoomData } from "../../redux/slices/authSlice";
+import { setRoomData } from "../../redux/slices/authSlice.js";
 
 const { CREATE_AND_JOIN_ROOM, FIND_ROOM_BY_EMAIL } = roomEndpoints;
 

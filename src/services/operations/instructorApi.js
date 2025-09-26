@@ -1,5 +1,5 @@
-import { apiConnector } from "../apiConnector";
-import { setUser, setAuthLoading } from "../../redux/slices/authSlice";
+import { apiConnector } from "../apiConnector.js";
+import { setUser, setAuthLoading } from "../../redux/slices/authSlice.js";
 import toast from "react-hot-toast";
 
 import { authEnpoint } from "../endPoints/authEndpoints.js";

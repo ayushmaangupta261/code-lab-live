@@ -1,4 +1,4 @@
-import { apiConnector } from "../apiConnector";
+import { apiConnector } from "../apiConnector.js";
 
 import { codeEditorEndpoints } from "../endPoints/codeEditorEndpoints.js";
 const { GET_FILE_TREE_API, GET_FILE_API, DELETE_FILE_API, CREATE_FILE_API,CREATE_FOLDER_API } =

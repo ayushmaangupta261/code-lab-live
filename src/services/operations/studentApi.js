@@ -1,8 +1,8 @@
-import { apiConnector } from "../apiConnector";
+import { apiConnector } from "../apiConnector.js";
 import toast from "react-hot-toast";
-import { setUser } from "../../redux/slices/authSlice";
+import { setUser } from "../../redux/slices/authSlice.js";
 
-import { studentEndpoints } from "../endPoints/studentEndpoints";
+import { studentEndpoints } from "../endPoints/studentEndpoints.js";
 
 const { GET_ALL_COLLEGE_LIST_API, EDIT_STUDENT_DETAILS_API } = studentEndpoints;
 
