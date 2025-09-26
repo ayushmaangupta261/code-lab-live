@@ -1,0 +1,165 @@
+const userSocketMap = {}; // Store socket-user mappings
+import ACTIONS from "../constants/Actions.js"; // Import action constants
+
+export function initializeSocket(io) {
+  // Function to get all connected clients in a room
+  function getAllConnectedClients(roomId) {
+    if (!roomId || !io.sockets.adapter.rooms.has(roomId)) return [];
+    return Array.from(io.sockets.adapter.rooms.get(roomId)).map((socketId) => ({
+      socketId,
+      userName: userSocketMap[socketId],
+    }));
+  }
+
+  io.on("connection", (socket) => {
+    console.log(`New user connected: ${socket.id}`);
+
+    // Handle user joining a room
+    socket.on(ACTIONS.JOIN, ({ roomId, userName }) => {
+      userSocketMap[socket.id] = userName;
+      socket.join(roomId);
+
+      const clients = getAllConnectedClients(roomId);
+      io.to(roomId).emit(ACTIONS.JOINED, {
+        clients,
+        userName,
+        socketId: socket.id,
+      });
+    });
+
+    // Handle code changes in a room
+    socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
+      socket.to(roomId).emit(ACTIONS.CODE_CHANGE, { code });
+    });
+
+    // Sync code with a specific user
+    socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
+      io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
+    });
+
+    // Notify others before disconnecting
+    socket.on("disconnecting", () => {
+      const rooms = [...socket.rooms];
+      rooms.forEach((roomId) => {
+        socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
+          socketId: socket.id,
+          userName: userSocketMap[socket.id],
+        });
+      });
+    });
+
+    // Clean up user mapping on disconnect
+    socket.on("disconnect", () => {
+      delete userSocketMap[socket.id];
+      console.log(`User disconnected: ${socket.id}`);
+    });
+  });
+}
+
+
+//---------------------------------------------------------------------
+
+const WebSocket = require("ws");
+
+const wss = new WebSocket.Server({ port: 8080 });
+
+const rooms = {}; // { roomId: { clients: Set<WebSocket>, history: [] } }
+
+wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+      const { type, roomId, userId } = data;
+
+      if (type === "join-scribber") {
+        if (!rooms[roomId]) {
+          rooms[roomId] = { clients: new Set(), history: [] };
+        }
+
+        rooms[roomId].clients.add(ws);
+        ws.roomId = roomId;
+        console.log(`User joined room: ${roomId}`);
+
+        // Send drawing history to new client
+        ws.send(
+          JSON.stringify({ type: "history", history: rooms[roomId].history })
+        );
+      }
+
+      // Broadcast theme change
+      if (data.type === 'theme-change') {
+        const clients = rooms[roomId].clients; // Corrected reference to clients
+        clients.forEach(client => {
+          if (client !== ws) {
+            client.send(JSON.stringify({
+              type: 'theme-change',
+              theme: data.theme,
+              username: data.username
+            }));
+          }
+        });
+      }
+
+      if (type === "draw") {
+        if (!rooms[roomId]) return;
+
+        // Save draw command to history
+        rooms[roomId].history.push({
+          x0: data.x0,
+          y0: data.y0,
+          x1: data.x1,
+          y1: data.y1,
+          color: data.color,
+        });
+
+        // Broadcast to others
+        rooms[roomId].clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      }
+
+      // Clear the canvas for all clients in the room
+      if (type === "clear-canvas") {
+        if (!rooms[roomId]) return;
+
+        // Clear the drawing history for this room
+        rooms[roomId].history = [];
+
+        // Broadcast the clear event to all clients in the room
+        rooms[roomId].clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: "clear-canvas",
+            }));
+          }
+        });
+      }
+
+      if (type === "cursor") {
+        if (!rooms[roomId]) return;
+
+        rooms[roomId].clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Error handling message:", err);
+    }
+  });
+
+  ws.on("close", () => {
+    const roomId = ws.roomId;
+    if (roomId && rooms[roomId]) {
+      rooms[roomId].clients.delete(ws);
+      if (rooms[roomId].clients.size === 0) {
+        delete rooms[roomId]; // Clean up empty room
+      }
+    }
+  });
+});
+
+console.log("WebSocket server running on ws://localhost:8080");
