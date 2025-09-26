@@ -121,8 +121,17 @@ const EditorPage = () => {
   };
 
   const leaveRoom = () => {
+    if (socketRef.current) {
+      socketRef.current.emit("leave-room", {
+        roomId,
+        userId: user?.fullName || email, // or whatever you use as ID
+      });
+    }
+  
     if (user?.accountType === "Student") {
       ReactNavigate("/dashboard/Projects");
+    } else {
+      window.history.back();
     }
   };
 

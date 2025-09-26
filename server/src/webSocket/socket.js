@@ -171,6 +171,34 @@ export function initializeSocket(io) {
       socket.to(roomId).emit("cursor", data);
     });
 
+    socket.on("leave-room", ({ roomId, userId }) => {
+      console.log(`🚪 User ${userId} leaving room ${roomId}`);
+
+      const room = rooms[roomId];
+      if (room) {
+        // 🔴 Remove cursor if it exists
+        if (room.cursors[userId]) {
+          delete room.cursors[userId];
+          socket.to(roomId).emit("cursor-remove", { userId });
+        }
+
+        // Remove user from room
+        room.users.delete(socket.id);
+
+        // 🧹 Clean up room if empty
+        if (room.users.size === 0) {
+          delete rooms[roomId];
+        }
+      }
+
+      // make the socket leave the actual Socket.IO room
+      socket.leave(roomId);
+
+      // optionally notify others
+      socket.to(roomId).emit("user-left", { userId, socketId: socket.id });
+    });
+
+
     socket.on("disconnect", () => {
       const emailId = socketToEmailMapping.get(socket.id);
 
