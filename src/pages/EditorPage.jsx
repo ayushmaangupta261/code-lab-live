@@ -358,6 +358,7 @@ const EditorPage = () => {
 
         socketRef.current.on("connect", () => {
           console.log("✅ Socket connected successfully.");
+          socketRef.current.emit("start-terminal");
         });
 
         socketRef.current.on("connect_error", handleErrors);
