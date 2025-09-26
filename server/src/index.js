@@ -32,7 +32,7 @@ const server = createServer(app);
 // Initialize Socket.io and configure CORS settings
 const io = new Server(server, {
   cors: {
-    origin: [process.env.CORS_ORIGIN, "http://localhost:3000", "http://172.30.0.1:3000/"], // Allow multiple origins
+    origin: [process.env.CORS_ORIGIN, "http://localhost:3000", "https://codelab-5hqt.onrender.com"], // Allow multiple origins
     methods: ["GET", "POST"],
     credentials: true, // Allow authentication
     allowedHeaders: ["Authorization", "Content-Type"], // Ensure required headers are allowed

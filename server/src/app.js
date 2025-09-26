@@ -23,7 +23,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        "http://localhost:3000",
+        "http://localhost:3000","https://codelab-5hqt.onrender.com"
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
