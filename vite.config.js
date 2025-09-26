@@ -10,5 +10,13 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["xterm"],
-  },                
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  build: {
+    outDir: 'dist', // Ensure Vite builds to dist
+  },
 })
