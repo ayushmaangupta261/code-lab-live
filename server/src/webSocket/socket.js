@@ -83,7 +83,7 @@ export function initializeSocket(io) {
     }
 
     // Watch projects folder
-    chokidar.watch("/app/projects").on("all", (event, path) => {
+    chaukidar.watch("/app/projects").on("all", (event, path) => {
       io.emit("file:refresh", path);
     });
 
