@@ -172,36 +172,35 @@ export function initializeSocket(io) {
     });
 
     socket.on("leave-room", ({ roomId, userId, email }) => {
-      console.log(`🚪 User ${userId} (${email}) leaving room ${roomId}`);
+      if (!roomId) return;
 
       const room = rooms[roomId];
       if (room) {
-        // Remove cursor if it exists
-        if (room.cursors[userId]) {
+        // Remove cursor if exists
+        if (userId && room.cursors[userId]) {
           delete room.cursors[userId];
           socket.to(roomId).emit("cursor-remove", { userId });
         }
 
-        // Remove user from room
+        // Remove user from room map
         room.users.delete(socket.id);
+
+        // Notify others in room
+        socket.to(roomId).emit("user-left", { userId, socketId: socket.id, email });
+
+        // Optional: emit frontend disconnect toast
+        socket.to(roomId).emit("disconnected", { socketId: socket.id, email: email || "Unknown" });
 
         // Clean up room if empty
         if (room.users.size === 0) {
           delete rooms[roomId];
+          console.log(`Room ${roomId} deleted as it's empty.`);
         }
       }
 
-      // Make the socket leave the actual Socket.IO room
+      // Make the socket actually leave the Socket.IO room
       socket.leave(roomId);
-
-      // Notify other clients in the room
-      socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
-        socketId: socket.id,
-        email,
-        fullName: userId, // or whatever you use as name
-      });
     });
-
 
 
     socket.on("disconnect", () => {
@@ -241,25 +240,7 @@ export function initializeSocket(io) {
       });
     });
 
-    // socket.on("disconnect", () => {
-    //   const emailId = socketToEmailMapping.get(socket.id);
 
-    //   if (emailId) {
-    //     emailToSocketMapping.delete(emailId);
-    //   }
-
-    //   socketToEmailMapping.delete(socket.id);
-    //   console.log("A user disconnected:", socket.id);
-
-    //   // Handle room cleanup
-    //   const roomsLeft = Array.from(socket.rooms).filter((r) => r !== socket.id);
-    //   roomsLeft.forEach((roomId) => {
-    //     const room = rooms[roomId];
-    //     if (room && io.sockets.adapter.rooms.get(roomId)?.size === 1) {
-    //       delete rooms[roomId]; // Clean up if it's the last user in the room
-    //     }
-    //   });
-    // });
   });
 }
 

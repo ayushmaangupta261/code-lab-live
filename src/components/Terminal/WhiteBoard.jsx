@@ -167,7 +167,7 @@ const Whiteboard = () => {
   }, []);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:4000"); // Connect using Socket.IO
+    socketRef.current = io("https://codelab-backend-3pxz.onrender.com/"); // Connect using Socket.IO
 
     return () => socketRef.current.disconnect();
   }, []);
