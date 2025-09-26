@@ -79,33 +79,39 @@ export function initializeSocket(io) {
     });
 
     // Terminal Integration
-    (async () => {
-      try {
-        const roomId = socket.handshake.query.roomId;
-        const shell = "/bin/sh"; // ✅ always available in Linux/Render
+    socket.on("start-terminal", ({ roomId }) => {
+      console.log("✅ Terminal request for room:", roomId);
 
-        // Ensure project dir exists
-        const projectDir = `app/projects/${roomId}`;
-        await fs.mkdir(projectDir, { recursive: true });
+      try {
+        const shell = "bash"; // since Docker runs Linux
 
         const ptyProcess = spawn(shell, [], {
           name: "xterm-color",
           cols: 80,
           rows: 24,
-          cwd: projectDir, // ✅ safe now
+          cwd: `${BASE_PROJECTS_DIR}/${roomId}`, // use roomId here
           env: process.env,
         });
 
+        // send output to client
         ptyProcess.onData((data) => socket.emit("output", data));
 
+        // handle input from client
         socket.on("input", (data) => ptyProcess.write(data));
+
+        // resize terminal
         socket.on("resize", ({ cols, rows }) => ptyProcess.resize(cols, rows));
-        socket.on("disconnect", () => ptyProcess.kill());
+
+        // cleanup on disconnect
+        socket.on("disconnect", () => {
+          console.log("❌ Client disconnected, killing terminal");
+          ptyProcess.kill();
+        });
       } catch (error) {
         console.error("Error initializing terminal:", error);
       }
-    })();
-    
+    });
+
 
     // Watch projects folder
     chokidar.watch(BASE_PROJECTS_DIR).on("all", (event, path) => {

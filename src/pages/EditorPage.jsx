@@ -358,8 +358,9 @@ const EditorPage = () => {
 
         socketRef.current.on("connect", () => {
           console.log("✅ Socket connected successfully.");
-          socketRef.current.emit("start-terminal");
+          socketRef.current.emit("start-terminal", { roomId }); // ✅ send roomId too
         });
+
 
         socketRef.current.on("connect_error", handleErrors);
         socketRef.current.on("connect_failed", handleErrors);
