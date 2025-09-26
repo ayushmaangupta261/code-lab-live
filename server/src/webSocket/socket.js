@@ -314,24 +314,29 @@ export function initializeSocket(io) {
     // Terminal Integration
     try {
       const roomId = socket.handshake.query.roomId;
-      const shell = "bash"; // Docker runs Linux
-
+      const shell = "/bin/sh"; // ✅ always available in Linux/Render
+      
+      // Ensure project dir exists
+      const projectDir = `${BASE_PROJECTS_DIR}/${roomId}`;
+      await fs.mkdir(projectDir, { recursive: true });
+    
       const ptyProcess = spawn(shell, [], {
         name: "xterm-color",
         cols: 80,
         rows: 24,
-        cwd: `projects/${roomId}`, // ✅ path fixed
+        cwd: projectDir, // ✅ safe now
         env: process.env,
       });
-
+    
       ptyProcess.onData((data) => socket.emit("output", data));
-
+    
       socket.on("input", (data) => ptyProcess.write(data));
       socket.on("resize", ({ cols, rows }) => ptyProcess.resize(cols, rows));
       socket.on("disconnect", () => ptyProcess.kill());
     } catch (error) {
       console.error("Error initializing terminal:", error);
     }
+    
 
     // Watch projects folder
     chokidar.watch(BASE_PROJECTS_DIR).on("all", (event, path) => {
