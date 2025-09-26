@@ -320,7 +320,7 @@ export function initializeSocket(io) {
         name: "xterm-color",
         cols: 80,
         rows: 24,
-        cwd: `${BASE_PROJECTS_DIR}/${roomId}`, // ✅ path fixed
+        cwd: `projects/${roomId}`, // ✅ path fixed
         env: process.env,
       });
 
