@@ -41,7 +41,7 @@ export const registerUser = (data) => async (dispatch) => {
 
     dispatch(setAuthLoading(false));
 
-    toast.success("Registration Done Successfully");
+    toast.success("Registration Done, Please go to Login");
 
     return response;
   } catch (error) {
