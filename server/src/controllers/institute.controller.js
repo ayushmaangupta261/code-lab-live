@@ -46,11 +46,11 @@ const registerInstitute = async (req, res, next) => {
     const createdInstitute = institute.toObject();
     delete createdInstitute.password;
 
-    setTimeout(() => {
+   
       return res
         .status(201)
         .json({ institute: createdInstitute, success: true });
-    }, 5000);
+   
   } catch (error) {
     console.error("Error in register college:", error);
     return res.status(error.statusCode || 500).json({
