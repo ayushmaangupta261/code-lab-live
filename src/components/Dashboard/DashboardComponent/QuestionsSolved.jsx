@@ -69,7 +69,7 @@ const QuestionsSolved = () => {
         {/* Text Stats */}
         <div className="text-white  text-sm md:text-lg">
           <ul className="space-y-2">
-            <li><strong>Solved:</strong> {solvedQuestions.length}</li>
+            <li><strong>Solved:</strong> {solvedQuestions?.length}</li>
             <li><strong>Total Questions:</strong> {totalQuestions}</li>
           </ul>
         </div>
