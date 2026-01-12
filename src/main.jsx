@@ -137,6 +137,12 @@ const router = createBrowserRouter([
       },
       ],
   },
+
+  {
+    path: "*",
+    element: <DefaultRedirect />,
+  },
+  
 ]);
 
 createRoot(document.getElementById("root")).render(
