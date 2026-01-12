@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import store from "./redux/store/index.js";
 import Home from "./pages/Home.jsx";
 import EditorPage from "./pages/EditorPage.jsx";
-import DefaultRedirect from ".pages/DefaultRedirect.jsx";
+import DefaultRedirect from "./pages/DefaultRedirect.jsx";
 import CreateAndJoinPage from "./pages/CreateAndJoinPage.jsx";
 import { Toaster } from "react-hot-toast";
 import Auth from "./pages/Auth.jsx";
